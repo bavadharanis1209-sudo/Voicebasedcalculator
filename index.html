@@ -1,0 +1,332 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Voice-Based Calculator</title>
+
+    <meta name="viewport"
+          content="width=device-width, initial-scale=1.0">
+
+    <style>
+
+        * {
+            box-sizing: border-box;
+        }
+
+        body {
+            margin: 0;
+            background: white;
+            font-family: "Comic Sans MS", cursive, sans-serif;
+        }
+
+        /* Top bar */
+        .topbar {
+            height: 80px;
+            background: #3f51b5;
+            color: white;
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            padding: 0 25px;
+            font-size: 32px;
+        }
+
+        .title {
+            font-size: 32px;
+        }
+
+        .menu {
+            font-size: 35px;
+        }
+
+        /* Main area */
+        .container {
+            min-height: calc(100vh - 80px);
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            padding-top: 45vh;
+        }
+
+        .section {
+            text-align: center;
+            margin-bottom: 35px;
+        }
+
+        .heading {
+            font-size: 30px;
+            font-weight: bold;
+            font-style: italic;
+            margin-bottom: 12px;
+        }
+
+        .value {
+            font-size: 26px;
+            min-height: 35px;
+        }
+
+        /* Ask button */
+        .ask-button {
+            border: none;
+            background: #d9d9d9;
+            padding: 15px 22px;
+            font-family: "Comic Sans MS", cursive, sans-serif;
+            font-size: 24px;
+            font-style: italic;
+            cursor: pointer;
+
+            box-shadow: 0 3px 7px rgba(0,0,0,0.25);
+        }
+
+        .ask-button:active {
+            transform: scale(0.97);
+        }
+
+        /* Mobile */
+        @media (max-width: 500px) {
+
+            .topbar {
+                height: 80px;
+                padding: 0 25px;
+            }
+
+            .title {
+                font-size: 30px;
+            }
+
+            .menu {
+                font-size: 32px;
+            }
+
+            .container {
+                padding-top: 45vh;
+            }
+
+            .heading {
+                font-size: 28px;
+            }
+
+            .value {
+                font-size: 24px;
+            }
+
+            .ask-button {
+                font-size: 22px;
+            }
+        }
+
+    </style>
+</head>
+
+<body>
+
+    <!-- Top Bar -->
+    <div class="topbar">
+
+        <div class="title">
+            Screen1
+        </div>
+
+        <div class="menu">
+            ⋮
+        </div>
+
+    </div>
+
+
+    <!-- Main Content -->
+    <div class="container">
+
+        <!-- Question -->
+        <div class="section">
+
+            <div class="heading">
+                QUESTION
+            </div>
+
+            <div class="value" id="question">
+                -
+            </div>
+
+        </div>
+
+
+        <!-- Answer -->
+        <div class="section">
+
+            <div class="heading">
+                ANSWER
+            </div>
+
+            <div class="value" id="answer">
+                -
+            </div>
+
+        </div>
+
+
+        <!-- Button -->
+        <button class="ask-button" onclick="askQuestion()">
+            ASK A QUESTION
+        </button>
+
+    </div>
+
+
+    <script>
+
+        function askQuestion() {
+
+            const SpeechRecognition =
+                window.SpeechRecognition ||
+                window.webkitSpeechRecognition;
+
+            if (!SpeechRecognition) {
+
+                alert(
+                    "Voice recognition is not supported in this browser."
+                );
+
+                return;
+            }
+
+            const recognition = new SpeechRecognition();
+
+            recognition.lang = "en-US";
+
+            recognition.continuous = false;
+
+            recognition.interimResults = false;
+
+
+            recognition.start();
+
+
+            document.getElementById("question").innerText =
+                "Listening...";
+
+
+            recognition.onresult = function(event) {
+
+                let text =
+                    event.results[0][0].transcript;
+
+                document.getElementById("question").innerText =
+                    text;
+
+                let answer = calculate(text);
+
+                document.getElementById("answer").innerText =
+                    answer;
+
+            };
+
+
+            recognition.onerror = function() {
+
+                document.getElementById("question").innerText =
+                    "Could not recognize voice.";
+
+                document.getElementById("answer").innerText =
+                    "-";
+
+            };
+
+        }
+
+
+        function calculate(text) {
+
+            text = text.toLowerCase();
+
+            /*
+             Convert spoken operators
+             into mathematical operators
+            */
+
+            text = text.replace(/plus/g, "+");
+            text = text.replace(/add/g, "+");
+
+            text = text.replace(/minus/g, "-");
+            text = text.replace(/subtract/g, "-");
+
+            text = text.replace(/multiplied by/g, "*");
+            text = text.replace(/multiply/g, "*");
+            text = text.replace(/times/g, "*");
+
+            text = text.replace(/divided by/g, "/");
+            text = text.replace(/divide/g, "/");
+
+
+            /*
+             Convert common spoken numbers
+            */
+
+            const numbers = {
+                "zero": "0",
+                "one": "1",
+                "two": "2",
+                "three": "3",
+                "four": "4",
+                "five": "5",
+                "six": "6",
+                "seven": "7",
+                "eight": "8",
+                "nine": "9",
+                "ten": "10",
+                "eleven": "11",
+                "twelve": "12",
+                "thirteen": "13",
+                "fourteen": "14",
+                "fifteen": "15",
+                "sixteen": "16",
+                "seventeen": "17",
+                "eighteen": "18",
+                "nineteen": "19",
+                "twenty": "20"
+            };
+
+
+            for (let word in numbers) {
+
+                text = text.replace(
+                    new RegExp("\\b" + word + "\\b", "g"),
+                    numbers[word]
+                );
+
+            }
+
+
+            text = text.replace(/\s+/g, "");
+
+
+            /*
+             Perform calculation
+            */
+
+            try {
+
+                if (/^[0-9+\-*/.]+$/.test(text)) {
+
+                    let result =
+                        Function("return " + text)();
+
+                    return result;
+
+                }
+
+                return "Unable to calculate";
+
+            }
+
+            catch (error) {
+
+                return "Invalid calculation";
+
+            }
+
+        }
+
+    </script>
+
+</body>
+</html>
