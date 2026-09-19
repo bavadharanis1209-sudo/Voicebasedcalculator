@@ -74,7 +74,7 @@ A single-screen Android app, built with **MIT App Inventor**, that lets you spea
 5. It speaks the result back: *"The answer is: 8"*
 ## 🌐 Live Website
 
-[Click here to open the Voice-Based Calculator](https://sasmithamantharasalam-sudo.github.io/vbcalculator/)
+
 ## Features
 
 - 🎤 Voice input via device microphone (`SpeechRecognizer`)
